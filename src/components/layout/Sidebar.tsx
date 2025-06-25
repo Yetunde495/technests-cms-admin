@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Settings,
   LogOut,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ const navigation = [
   { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "File Manager", href: "/files", icon: FolderOpen },
+  { name: "Blog", href: "/blog-public", icon: BookOpen },
   { name: "Blog Manager", href: "/blog", icon: Edit },
   {
     name: "Chat Conversations",
