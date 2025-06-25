@@ -26,6 +26,12 @@ interface BlogFormData {
   status: "draft" | "published";
   tags: string[];
   featuredImage?: string;
+  slug?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  publishedAt?: string;
+  readingTime?: number;
+  category?: string;
 }
 
 const BlogEditor = () => {
@@ -50,6 +56,11 @@ const BlogEditor = () => {
       excerpt: "",
       status: "draft",
       tags: [],
+      slug: "",
+      seoTitle: "",
+      seoDescription: "",
+      category: "",
+      readingTime: 5,
     },
   });
 
@@ -72,9 +83,20 @@ const BlogEditor = () => {
       setValue("status", post.status);
       setTags(post.tags);
       setValue("tags", post.tags);
+      setValue("slug", post.slug);
       if (post.featuredImage) {
         setValue("featuredImage", post.featuredImage);
       }
+      // Set metadata fields if they exist in the BlogPost type
+      // Note: These fields may need to be added to the BlogPost interface
+      if ((post as any).seoTitle) setValue("seoTitle", (post as any).seoTitle);
+      if ((post as any).seoDescription)
+        setValue("seoDescription", (post as any).seoDescription);
+      if ((post as any).category) setValue("category", (post as any).category);
+      if ((post as any).readingTime)
+        setValue("readingTime", (post as any).readingTime);
+      if (post.publishedAt)
+        setValue("publishedAt", post.publishedAt.slice(0, 16));
     } catch (error) {
       console.error("Failed to fetch blog post:", error);
       navigate("/blog");
@@ -231,7 +253,7 @@ const BlogEditor = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Publish Settings */}
+            /* Publish Settings */
             <Card>
               <CardHeader>
                 <CardTitle>Publish Settings</CardTitle>
@@ -256,6 +278,37 @@ const BlogEditor = () => {
                 </div>
 
                 <div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    onValueChange={(value) => setValue("category", value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="content-marketing">
+                        Content Marketing
+                      </SelectItem>
+                      <SelectItem value="seo">SEO</SelectItem>
+                      <SelectItem value="social-media">Social Media</SelectItem>
+                      <SelectItem value="analytics">Analytics</SelectItem>
+                      <SelectItem value="tutorials">Tutorials</SelectItem>
+                      <SelectItem value="news">News</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="publishedAt">Publish Date</Label>
+                  <Input
+                    id="publishedAt"
+                    type="datetime-local"
+                    {...register("publishedAt")}
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
                   <Label htmlFor="featuredImage">Featured Image URL</Label>
                   <Input
                     id="featuredImage"
@@ -266,7 +319,68 @@ const BlogEditor = () => {
                 </div>
               </CardContent>
             </Card>
+            {/* SEO Metadata */}
+            <Card>
+              <CardHeader>
+                <CardTitle>SEO Metadata</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="slug">URL Slug</Label>
+                  <Input
+                    id="slug"
+                    placeholder="blog-post-url-slug"
+                    {...register("slug")}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leave empty to auto-generate from title
+                  </p>
+                </div>
 
+                <div>
+                  <Label htmlFor="seoTitle">SEO Title</Label>
+                  <Input
+                    id="seoTitle"
+                    placeholder="Title for search engines (60 chars)"
+                    {...register("seoTitle")}
+                    className="mt-1"
+                    maxLength={60}
+                  />
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {watch("seoTitle")?.length || 0}/60 characters
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="seoDescription">SEO Description</Label>
+                  <Textarea
+                    id="seoDescription"
+                    placeholder="Description for search engines (160 chars)"
+                    rows={3}
+                    {...register("seoDescription")}
+                    className="mt-1"
+                    maxLength={160}
+                  />
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {watch("seoDescription")?.length || 0}/160 characters
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="readingTime">Reading Time (minutes)</Label>
+                  <Input
+                    id="readingTime"
+                    type="number"
+                    placeholder="5"
+                    {...register("readingTime", { valueAsNumber: true })}
+                    className="mt-1"
+                    min="1"
+                    max="60"
+                  />
+                </div>
+              </CardContent>
+            </Card>
             {/* Tags */}
             <Card>
               <CardHeader>
@@ -307,7 +421,6 @@ const BlogEditor = () => {
                 </div>
               </CardContent>
             </Card>
-
             {/* Preview */}
             <Card>
               <CardHeader>
