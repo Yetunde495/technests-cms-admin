@@ -12,6 +12,11 @@ import Signup from "./pages/auth/Signup";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Upload from "./pages/upload/Upload";
 
+// Blog CMS Pages
+import BlogManager from "./pages/blog/BlogManager";
+import BlogEditor from "./pages/blog/BlogEditor";
+import BlogView from "./pages/blog/BlogView";
+
 // Placeholder Pages with Icons
 import PlaceholderPage from "./pages/PlaceholderPage";
 import {
@@ -197,24 +202,36 @@ const App = () => (
             }
           />
 
+          {/* Blog CMS Routes */}
           <Route
             path="/blog"
             element={
               <ProtectedRoute>
-                <PlaceholderPage
-                  title="Blog Manager"
-                  description="Create, edit, and publish blog posts with a powerful CMS built for content marketers."
-                  icon={<Edit className="w-full h-full" />}
-                  comingSoonFeatures={[
-                    "Rich text editor with markdown support",
-                    "SEO optimization tools",
-                    "Draft and published post management",
-                    "Tag and category organization",
-                    "Featured image management",
-                    "URL slug customization",
-                    "Publishing workflow and approvals",
-                  ]}
-                />
+                <BlogManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blog/new"
+            element={
+              <ProtectedRoute>
+                <BlogEditor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blog/:id"
+            element={
+              <ProtectedRoute>
+                <BlogView />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/blog/:id/edit"
+            element={
+              <ProtectedRoute>
+                <BlogEditor />
               </ProtectedRoute>
             }
           />
