@@ -39,11 +39,22 @@ export const authApi = {
   ): Promise<ApiResponse<{ user: User; token: string }>> => {
     await delay();
 
-    const user = mockUsers.find((u) => u.email === credentials.email);
-
-    if (!user || credentials.password !== "password123") {
-      throw new Error("Invalid credentials");
+    // Accept any email and password for demo purposes
+    if (!credentials.email || !credentials.password) {
+      throw new Error("Email and password are required");
     }
+
+    // Create a user object based on the provided email
+    const user: User = {
+      id: "demo-user-" + Date.now(),
+      email: credentials.email,
+      name: credentials.email
+        .split("@")[0]
+        .replace(/[._-]/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase()),
+      role: "admin",
+      createdAt: new Date().toISOString(),
+    };
 
     return {
       success: true,
