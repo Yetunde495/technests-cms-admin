@@ -28,7 +28,6 @@ const navigation = [
   },
   { name: "Social Media", href: "/social", icon: Share2 },
   { name: "Calendar", href: "/calendar", icon: Calendar },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "File Manager", href: "/files", icon: FolderOpen },
   { name: "Blog", href: "/blog-public", icon: BookOpen },
   { name: "Blog Manager", href: "/blog", icon: Edit },

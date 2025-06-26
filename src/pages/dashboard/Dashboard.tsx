@@ -12,33 +12,42 @@ import {
   ArrowRight,
   Eye,
   Heart,
+  BarChart3,
+  Target,
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import SummaryCard from "@/components/dashboard/SummaryCard";
+import AnalyticsChart from "@/components/dashboard/AnalyticsChart";
+import PostPerformance from "@/components/dashboard/PostPerformance";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { dashboardApi } from "@/services/api";
-import { DashboardStats } from "@/types";
+import { dashboardApi, analyticsApi } from "@/services/api";
+import { DashboardStats, AnalyticsData } from "@/types";
 
 const Dashboard = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const response = await dashboardApi.getStats();
-        setStats(response.data);
+        const [statsResponse, analyticsResponse] = await Promise.all([
+          dashboardApi.getStats(),
+          analyticsApi.getOverview("month"),
+        ]);
+        setStats(statsResponse.data);
+        setAnalytics(analyticsResponse.data);
       } catch (error) {
-        console.error("Failed to fetch dashboard stats:", error);
+        console.error("Failed to fetch dashboard data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchStats();
+    fetchData();
   }, []);
 
   if (isLoading) {
@@ -213,6 +222,101 @@ const Dashboard = () => {
             ))}
           </div>
         </div>
+
+        {/* Analytics Section */}
+        {analytics && (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-display font-semibold">
+                Analytics Overview
+              </h2>
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <BarChart3 className="h-4 w-4" />
+                <span>Last 30 days</span>
+              </div>
+            </div>
+
+            {/* Performance Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <SummaryCard
+                title="Total Revenue"
+                value={`$${analytics.metrics.revenue.toLocaleString()}`}
+                description="from content conversions"
+                icon={<Target className="h-4 w-4" />}
+                trend={{
+                  value: 12,
+                  isPositive: true,
+                  period: "last month",
+                }}
+                color="success"
+              />
+              <SummaryCard
+                title="Conversion Rate"
+                value={`${((analytics.metrics.conversions / analytics.metrics.views) * 100).toFixed(1)}%`}
+                description="visitors to customers"
+                icon={<TrendingUp className="h-4 w-4" />}
+                trend={{
+                  value: 5,
+                  isPositive: true,
+                  period: "last month",
+                }}
+                color="brand"
+              />
+              <SummaryCard
+                title="Avg. Engagement"
+                value={`${(((analytics.metrics.likes + analytics.metrics.shares + analytics.metrics.comments) / analytics.metrics.views) * 100).toFixed(1)}%`}
+                description="engagement rate"
+                icon={<Heart className="h-4 w-4" />}
+                trend={{
+                  value: 8,
+                  isPositive: true,
+                  period: "last month",
+                }}
+                color="warning"
+              />
+              <SummaryCard
+                title="Active Users"
+                value={`${Math.floor(analytics.metrics.views / 30).toLocaleString()}`}
+                description="daily average users"
+                icon={<Users className="h-4 w-4" />}
+                trend={{
+                  value: 15,
+                  isPositive: true,
+                  period: "last month",
+                }}
+                color="info"
+              />
+            </div>
+
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <AnalyticsChart
+                title="Performance Trends"
+                data={analytics.timeSeriesData}
+                type="line"
+              />
+              <AnalyticsChart
+                title="Platform Breakdown"
+                data={[]}
+                platformData={analytics.platformBreakdown.map(
+                  (platform, index) => ({
+                    ...platform,
+                    color: [
+                      "rgb(139, 92, 246)",
+                      "rgb(34, 197, 94)",
+                      "rgb(245, 158, 11)",
+                      "rgb(59, 130, 246)",
+                    ][index % 4],
+                  }),
+                )}
+                type="platform"
+              />
+            </div>
+
+            {/* Post Performance */}
+            <PostPerformance posts={stats.recentArticles} />
+          </div>
+        )}
 
         {/* Content Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
