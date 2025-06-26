@@ -20,6 +20,7 @@ import SummaryCard from "@/components/dashboard/SummaryCard";
 import AnalyticsChart from "@/components/dashboard/AnalyticsChart";
 import PostPerformance from "@/components/dashboard/PostPerformance";
 import PlatformAnalytics from "@/components/dashboard/PlatformAnalytics";
+import ContentDetailsModal from "@/components/dashboard/ContentDetailsModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,23 @@ const Dashboard = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [modalData, setModalData] = useState<{
+    type: "post" | "platform";
+    data: any;
+    isOpen: boolean;
+  }>({
+    type: "post",
+    data: null,
+    isOpen: false,
+  });
+
+  const openModal = (type: "post" | "platform", data: any) => {
+    setModalData({ type, data, isOpen: true });
+  };
+
+  const closeModal = () => {
+    setModalData({ type: "post", data: null, isOpen: false });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -297,10 +315,16 @@ const Dashboard = () => {
             />
 
             {/* Comprehensive Platform Analytics */}
-            <PlatformAnalytics data={analytics.platformBreakdown} />
+            <PlatformAnalytics
+              data={analytics.platformBreakdown}
+              onPlatformClick={(platform) => openModal("platform", platform)}
+            />
 
             {/* Post Performance */}
-            <PostPerformance posts={stats.recentArticles} />
+            <PostPerformance
+              posts={stats.recentArticles}
+              onPostClick={(post) => openModal("post", post)}
+            />
           </div>
         )}
 
@@ -321,7 +345,8 @@ const Dashboard = () => {
               {stats.recentArticles.map((article) => (
                 <div
                   key={article.id}
-                  className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => openModal("post", article)}
                 >
                   <div className="flex-1">
                     <h4 className="font-medium line-clamp-1">
@@ -422,6 +447,14 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Content Details Modal */}
+        <ContentDetailsModal
+          isOpen={modalData.isOpen}
+          onClose={closeModal}
+          type={modalData.type}
+          data={modalData.data}
+        />
       </div>
     </AppLayout>
   );

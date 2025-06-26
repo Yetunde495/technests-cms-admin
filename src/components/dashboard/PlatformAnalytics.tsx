@@ -35,9 +35,13 @@ interface PlatformData {
 
 interface PlatformAnalyticsProps {
   data: PlatformData[];
+  onPlatformClick?: (platform: PlatformData) => void;
 }
 
-const PlatformAnalytics = ({ data }: PlatformAnalyticsProps) => {
+const PlatformAnalytics = ({
+  data,
+  onPlatformClick,
+}: PlatformAnalyticsProps) => {
   const getPlatformIcon = (platform: string) => {
     const icons: Record<string, string> = {
       Blog: "📝",
@@ -114,7 +118,11 @@ const PlatformAnalytics = ({ data }: PlatformAnalyticsProps) => {
                 );
 
                 return (
-                  <TableRow key={index} className="hover:bg-muted/50">
+                  <TableRow
+                    key={index}
+                    className="hover:bg-muted/50 cursor-pointer"
+                    onClick={() => onPlatformClick?.(platform)}
+                  >
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <span

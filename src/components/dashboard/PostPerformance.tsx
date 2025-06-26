@@ -13,9 +13,10 @@ import { Article } from "@/types";
 
 interface PostPerformanceProps {
   posts: Article[];
+  onPostClick?: (post: Article) => void;
 }
 
-const PostPerformance = ({ posts }: PostPerformanceProps) => {
+const PostPerformance = ({ posts, onPostClick }: PostPerformanceProps) => {
   const sortedPosts = posts
     .filter((post) => post.status === "published")
     .sort((a, b) => b.views - a.views)
@@ -51,7 +52,8 @@ const PostPerformance = ({ posts }: PostPerformanceProps) => {
             sortedPosts.map((post, index) => (
               <div
                 key={post.id}
-                className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={() => onPostClick?.(post)}
               >
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-100 text-brand-600 font-bold text-sm">
                   #{index + 1}
