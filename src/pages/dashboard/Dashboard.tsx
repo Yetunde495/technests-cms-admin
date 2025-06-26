@@ -19,6 +19,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import SummaryCard from "@/components/dashboard/SummaryCard";
 import AnalyticsChart from "@/components/dashboard/AnalyticsChart";
 import PostPerformance from "@/components/dashboard/PostPerformance";
+import PlatformAnalytics from "@/components/dashboard/PlatformAnalytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -288,30 +289,15 @@ const Dashboard = () => {
               />
             </div>
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <AnalyticsChart
-                title="Performance Trends"
-                data={analytics.timeSeriesData}
-                type="line"
-              />
-              <AnalyticsChart
-                title="Platform Breakdown"
-                data={[]}
-                platformData={analytics.platformBreakdown.map(
-                  (platform, index) => ({
-                    ...platform,
-                    color: [
-                      "rgb(139, 92, 246)",
-                      "rgb(34, 197, 94)",
-                      "rgb(245, 158, 11)",
-                      "rgb(59, 130, 246)",
-                    ][index % 4],
-                  }),
-                )}
-                type="platform"
-              />
-            </div>
+            {/* Performance Trends Chart */}
+            <AnalyticsChart
+              title="Performance Trends"
+              data={analytics.timeSeriesData}
+              type="line"
+            />
+
+            {/* Comprehensive Platform Analytics */}
+            <PlatformAnalytics data={analytics.platformBreakdown} />
 
             {/* Post Performance */}
             <PostPerformance posts={stats.recentArticles} />

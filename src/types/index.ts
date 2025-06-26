@@ -143,6 +143,10 @@ export interface AnalyticsData {
       views: number;
       engagement: number;
       conversions: number;
+      totalGenerated: number;
+      totalPublished: number;
+      clicks: number;
+      engagementRate: number;
     };
   }[];
   timeSeriesData: {
