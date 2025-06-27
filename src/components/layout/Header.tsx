@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Bell, Search, Plus } from "lucide-react";
+import { Bell, Search, Plus, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,7 @@ interface HeaderProps {
 
 const Header = ({ children }: HeaderProps) => {
   return (
-    <header className="h-16 bg-background border-b border-border flex items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="h-16 bg-background border-b py-4 border-border flex items-center justify-between px-4 sm:px-6 lg:px-8">
       <div className="flex items-center space-x-4">
         {children}
         {/* Search */}
@@ -34,34 +34,14 @@ const Header = ({ children }: HeaderProps) => {
 
       <div className="flex items-center space-x-3">
         {/* Quick Actions */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-gradient-to-r from-brand-500 to-brand-600 text-white border-0 hover:from-brand-600 hover:to-brand-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <span>New Article</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <span>Social Post</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <span>Blog Post</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <span>Upload File</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="outline"
+          size="sm"
+          className="bg-gradient-to-r from-brand-500 to-brand-600 text-white border-0 hover:from-brand-600 hover:to-brand-700"
+        >
+          <Eye className="h-4 w-4 mr-2" />
+          View All Content
+        </Button>
 
         {/* Notifications */}
         <DropdownMenu>
@@ -102,35 +82,6 @@ const Header = ({ children }: HeaderProps) => {
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-center justify-center">
               View all notifications
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* User Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full">
-              <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-brand-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-medium text-xs">AJ</span>
-              </div>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>
-              <div>
-                <p className="font-medium">Alex Johnson</p>
-                <p className="text-sm text-muted-foreground">
-                  admin@contentpro.com
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Billing</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <span className="text-destructive">Sign out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -22,7 +22,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   }
 
   return (
-    <div className="bg-background">
+    <div className="bg-background max-w-[1800px] mx-auto">
       <div className="flex h-screen overflow-hidden">
         {/* Mobile sidebar overlay */}
         {isSidebarOpen && (

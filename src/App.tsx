@@ -34,6 +34,7 @@ import NotFound from "./pages/NotFound";
 import ContentGeneration from "./pages/ContentGeneration";
 import { AppProvider } from "./context/AppContext";
 import ContentResults from "./pages/ContentResults";
+import ContentCalendar from "./pages/ContentCalendar";
 
 const queryClient = new QueryClient();
 
@@ -152,20 +153,7 @@ const App = () => (
               path="/calendar"
               element={
                 <ProtectedRoute>
-                  <PlaceholderPage
-                    title="Content Calendar"
-                    description="Plan, schedule, and visualize your content strategy with an interactive calendar interface."
-                    icon={<Calendar className="w-full h-full" />}
-                    comingSoonFeatures={[
-                      "Interactive monthly calendar view",
-                      "Drag-and-drop content scheduling",
-                      "Content type color coding",
-                      "Day/week/month view options",
-                      "Bulk scheduling operations",
-                      "Integration with social media platforms",
-                      "Calendar export functionality",
-                    ]}
-                  />
+                  <ContentCalendar />
                 </ProtectedRoute>
               }
             />

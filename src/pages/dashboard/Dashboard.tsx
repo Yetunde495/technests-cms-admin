@@ -138,19 +138,63 @@ const Dashboard = () => {
               Here's what's happening with your content today.
             </p>
           </div>
-          <Button
-            asChild
-            className="bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700"
-          >
-            <Link to="/upload">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Content
-            </Link>
-          </Button>
+         
         </div>
 
+         {/* Performance Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <SummaryCard
+                title="Total Posts Generated"
+                value={`35`}
+                description="from content conversions"
+                icon={<Target className="h-10 w-10" />}
+                trend={{
+                  value: 12,
+                  isPositive: true,
+                  period: "last month",
+                }}
+                color="success"
+              />
+              <SummaryCard
+                title="Approval Rate"
+                value={`94%`}
+                description="approved content pieces"
+                icon={<TrendingUp className="h-4 w-4" />}
+                trend={{
+                  value: 5,
+                  isPositive: true,
+                  period: "last month",
+                }}
+                color="brand"
+              />
+              <SummaryCard
+                title="Avg. Engagement"
+                value={`${(((analytics.metrics.likes + analytics.metrics.shares + analytics.metrics.comments) / analytics.metrics.views) * 100).toFixed(1)}%`}
+                description="Enagagement rate"
+                icon={<TrendingUp className="h-4 w-4" />}
+                trend={{
+                  value: 8,
+                  isPositive: true,
+                  period: "last month",
+                }}
+                color="brand"
+              />
+              <SummaryCard
+                title="New Subscribers"
+                value={`${Math.floor(analytics.metrics.views / 30).toLocaleString()}`}
+                description="new subscribers"
+                icon={<Users className="h-4 w-4" />}
+                trend={{
+                  value: 15,
+                  isPositive: true,
+                  period: "last month",
+                }}
+                color="info"
+              />
+            </div>
+
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid-cols-1 hidden md:grid-cols-2 lg:grid-cols-4 gap-6">
           <SummaryCard
             title="Articles This Month"
             value={stats.articlesThisMonth}
@@ -190,7 +234,7 @@ const Dashboard = () => {
           <SummaryCard
             title="Engagement"
             value={stats.totalEngagement.toLocaleString()}
-            description="Likes, shares, comments"
+            description="Enagagement rate"
             icon={<Heart className="h-4 w-4" />}
             trend={{
               value: 15,
@@ -202,7 +246,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div>
+        <div className="hidden">
           <h2 className="text-xl font-display font-semibold mb-4">
             Quick Actions
           </h2>
@@ -255,57 +299,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Performance Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <SummaryCard
-                title="Total Revenue"
-                value={`$${analytics.metrics.revenue.toLocaleString()}`}
-                description="from content conversions"
-                icon={<Target className="h-4 w-4" />}
-                trend={{
-                  value: 12,
-                  isPositive: true,
-                  period: "last month",
-                }}
-                color="success"
-              />
-              <SummaryCard
-                title="Conversion Rate"
-                value={`${((analytics.metrics.conversions / analytics.metrics.views) * 100).toFixed(1)}%`}
-                description="visitors to customers"
-                icon={<TrendingUp className="h-4 w-4" />}
-                trend={{
-                  value: 5,
-                  isPositive: true,
-                  period: "last month",
-                }}
-                color="brand"
-              />
-              <SummaryCard
-                title="Avg. Engagement"
-                value={`${(((analytics.metrics.likes + analytics.metrics.shares + analytics.metrics.comments) / analytics.metrics.views) * 100).toFixed(1)}%`}
-                description="engagement rate"
-                icon={<Heart className="h-4 w-4" />}
-                trend={{
-                  value: 8,
-                  isPositive: true,
-                  period: "last month",
-                }}
-                color="warning"
-              />
-              <SummaryCard
-                title="Active Users"
-                value={`${Math.floor(analytics.metrics.views / 30).toLocaleString()}`}
-                description="daily average users"
-                icon={<Users className="h-4 w-4" />}
-                trend={{
-                  value: 15,
-                  isPositive: true,
-                  period: "last month",
-                }}
-                color="info"
-              />
-            </div>
+           
 
             {/* Performance Trends Chart */}
             <AnalyticsChart

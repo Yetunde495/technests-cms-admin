@@ -27,9 +27,7 @@ const navigation = [
     icon: FileText,
     badge: "8",
   },
-  { name: "Social Media", href: "/social", icon: Share2 },
   { name: "Calendar", href: "/calendar", icon: Calendar },
-  { name: "File Manager", href: "/files", icon: FolderOpen },
   { name: "Blog Manager", href: "/blog", icon: Edit },
   {
     name: "Chat Conversations",

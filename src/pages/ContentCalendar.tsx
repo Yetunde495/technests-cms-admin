@@ -41,6 +41,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import AppLayout from "@/components/layout/AppLayout";
 
 // Sample calendar data
 const calendarData = {
@@ -278,6 +279,7 @@ const ContentCalendar: React.FC = () => {
   });
 
   return (
+    <AppLayout>
     <div className="space-y-6">
       {/* Header */}
       <motion.div
@@ -588,6 +590,7 @@ const ContentCalendar: React.FC = () => {
         </Card>
       </motion.div>
     </div>
+    </AppLayout>
   );
 };
 

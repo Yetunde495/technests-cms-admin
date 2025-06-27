@@ -66,7 +66,7 @@ const SummaryCard = ({
         </CardTitle>
         <div
           className={cn(
-            "h-4 w-4 rounded-full p-3 flex items-center justify-center",
+            "h-8 w-8 rounded-full p-1.5 flex items-center justify-center",
             colors.icon,
           )}
         >
