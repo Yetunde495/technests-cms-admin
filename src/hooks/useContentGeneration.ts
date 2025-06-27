@@ -2,10 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GenerationRequest, ContentPlan, ContentItem } from "@/types";
 import { StepperStep } from "@/components/ui/vertical-stepper";
 import { useAppContext, useToasts } from "@/context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 // Mock API calls - replace with actual backend integration
 const mockApiCall = (data: any, delay: number = 1000) =>
   new Promise((resolve) => setTimeout(() => resolve(data), delay));
+
+
 
 export const useContentGeneration = () => {
   const { dispatch } = useAppContext();
@@ -20,6 +23,7 @@ export const useContentGeneration = () => {
         "id" | "status" | "progress" | "createdAt"
       >,
     ) => {
+      
       const generationRequest: GenerationRequest = {
         ...request,
         id: Math.random().toString(36).substr(2, 9),
@@ -355,6 +359,7 @@ export const useContentGeneration = () => {
       return generationRequest;
     },
     onSuccess: (data) => {
+      const navigate = useNavigate();
       addToast({
         type: "success",
         title: "Content Generation Complete!",
@@ -366,7 +371,9 @@ export const useContentGeneration = () => {
       queryClient.invalidateQueries({ queryKey: ["contentPlans"] });
 
       // Redirect to results page
-      window.location.href = "/results";
+      // window.location.href = "/results";
+      // console.log("Content generation complete! Redirecting to results page.");
+      // navigate('/results')
     },
     onError: (error) => {
       dispatch({

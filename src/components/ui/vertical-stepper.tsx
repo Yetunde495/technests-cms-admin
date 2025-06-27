@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 export interface StepperStep {
   id: string;
@@ -280,6 +281,7 @@ export const VerticalStepper: React.FC<VerticalStepperProps> = ({
   steps = defaultSteps,
   className,
 }) => {
+  const navigate = useNavigate()
   const getStatusIcon = (status: StepperStep["status"], isSubstep = false) => {
     const iconSize = isSubstep ? "h-3 w-3" : "h-4 w-4";
 
@@ -315,6 +317,15 @@ export const VerticalStepper: React.FC<VerticalStepperProps> = ({
     const date = new Date(timeString);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
+
+   React.useEffect(() => {
+    if (
+      steps.length > 0 &&
+      steps.every((step) => step.status === "completed")
+    ) {
+      navigate("/results");
+    }
+  }, [steps, navigate]);
 
   return (
     <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-9999 flex items-center justify-center p-4">
