@@ -1,3 +1,197 @@
+
+
+export interface Brand {
+  id: string;
+  name: string;
+  description: string;
+  industry: string;
+  targetAudience: string;
+  brandVoice: string;
+  logoUrl?: string;
+  brandColors: string[];
+  attachments: BrandAttachment[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BrandAttachment {
+  id: string;
+  name: string;
+  type: "image" | "document" | "video" | "audio";
+  url: string;
+  size: number;
+  uploadedAt: string;
+}
+
+export interface ContentPlatform {
+  id: string;
+  name: string;
+  type:
+    | "instagram"
+    | "facebook"
+    | "twitter"
+    | "linkedin"
+    | "tiktok"
+    | "youtube"
+    | "blog";
+  icon: string;
+  connected: boolean;
+  config?: Record<string, any>;
+}
+
+export interface ContentPlan {
+  id: string;
+  brandId: string;
+  title: string;
+  description: string;
+  month: string;
+  year: number;
+  platforms: string[];
+  status: "draft" | "generating" | "review" | "approved" | "published";
+  totalPosts: number;
+  generatedPosts: number;
+  approvedPosts: number;
+  scheduledPosts: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContentItem {
+  id: string;
+  planId: string;
+  platform: string;
+  type: "post" | "story" | "reel" | "video" | "article" | "carousel";
+  title: string;
+  content: string;
+  media: MediaItem[];
+  hashtags: string[];
+  scheduledDate: string;
+  status:
+    | "draft"
+    | "pending_review"
+    | "approved"
+    | "scheduled"
+    | "published"
+    | "failed";
+  analytics?: ContentAnalytics;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MediaItem {
+  id: string;
+  type: "image" | "video" | "gif";
+  url: string;
+  thumbnail?: string;
+  duration?: number;
+  size: number;
+  altText?: string;
+}
+
+export interface ContentAnalytics {
+  views: number;
+  likes: number;
+  shares: number;
+  comments: number;
+  clicks: number;
+  reach: number;
+  impressions: number;
+  engagementRate: number;
+  ctr: number;
+}
+
+export interface GenerationRequest {
+  id: string;
+  brandId: string;
+  platforms: string[];
+  duration: "1_week" | "2_weeks" | "1_month" | "3_months";
+  contentTypes: string[];
+  tone: string;
+  topics: string[];
+  additionalPrompts: string;
+  attachments: string[];
+  status: "pending" | "processing" | "completed" | "failed";
+  progress: number;
+  createdAt: string;
+}
+
+export interface AnalyticsSummary {
+  period: string;
+  totalPosts: number;
+  totalViews: number;
+  totalEngagement: number;
+  avgEngagementRate: number;
+  topPerformingPost: string;
+  platformBreakdown: Record<
+    string,
+    {
+      posts: number;
+      views: number;
+      engagement: number;
+    }
+  >;
+}
+
+export interface LoadingState {
+  isLoading: boolean;
+  message?: string;
+  progress?: number;
+  stage?: string;
+  stepperSteps?: import("@/components/ui/vertical-stepper").StepperStep[];
+}
+
+export interface Toast {
+  id: string;
+  type: "success" | "error" | "warning" | "info";
+  title: string;
+  description?: string;
+  duration?: number;
+}
+
+// Blog-related types
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  featuredImage?: string;
+  author: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  status: "draft" | "published" | "scheduled";
+  tags: string[];
+  categories: string[];
+  publishedAt?: string;
+  scheduledFor?: string;
+  createdAt: string;
+  updatedAt: string;
+  seo: {
+    metaTitle?: string;
+    metaDescription?: string;
+    keywords: string[];
+  };
+  analytics: {
+    views: number;
+    shares: number;
+    likes: number;
+    comments: number;
+  };
+}
+
+export interface BlogStats {
+  totalPosts: number;
+  publishedPosts: number;
+  draftPosts: number;
+  scheduledPosts: number;
+  totalViews: number;
+  totalShares: number;
+  avgEngagement: number;
+}
+
+
 // User and Authentication Types
 export interface User {
   id: string;
@@ -46,20 +240,7 @@ export interface Article {
   shares: number;
 }
 
-export interface BlogPost {
-  id: string;
-  title: string;
-  content: string;
-  excerpt: string;
-  status: "draft" | "published";
-  tags: string[];
-  author: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt?: string;
-  featuredImage?: string;
-  slug: string;
-}
+
 
 export interface SocialPost {
   id: string;

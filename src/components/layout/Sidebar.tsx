@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   BookOpen,
+  BotIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Upload Content", href: "/upload", icon: Upload },
+  { name: "Content Generation", href: "/generate", icon: BotIcon },
   {
     name: "Articles",
     href: "/articles",
@@ -29,7 +30,6 @@ const navigation = [
   { name: "Social Media", href: "/social", icon: Share2 },
   { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "File Manager", href: "/files", icon: FolderOpen },
-  { name: "Blog", href: "/blog-public", icon: BookOpen },
   { name: "Blog Manager", href: "/blog", icon: Edit },
   {
     name: "Chat Conversations",
