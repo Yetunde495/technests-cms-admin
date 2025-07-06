@@ -5,7 +5,6 @@ import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { blogApi } from "@/services/api";
 import { BlogPost } from "@/types";
 
 const BlogView = () => {
@@ -22,8 +21,8 @@ const BlogView = () => {
 
   const fetchPost = async () => {
     try {
-      const response = await blogApi.getById(id!);
-      setPost(response.data);
+      // const response = await blogApi.getById(id!);
+      // setPost(response.data);
     } catch (error) {
       console.error("Failed to fetch blog post:", error);
       navigate("/blog");

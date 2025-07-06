@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react";
 import AuthLayout from "@/components/layout/AuthLayout";
@@ -7,11 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { authApi } from "@/services/api";
 import { LoginCredentials } from "@/types";
+import { signInUser } from "@/services/auth";
+import { useUser } from "@/context/AppContext";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
+  const {setUser} = useUser()
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -27,15 +30,15 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await authApi.login(data);
-      if (response.success) {
+      const resp = await signInUser(data)
+      if (resp) {
         // In a real app, you'd store the token and user data
-        localStorage.setItem("auth_token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        navigate("/dashboard");
+        localStorage.setItem("auth_token", resp?.entity?.token);
+        setUser(resp?.entity)
+        navigate("/blog");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      toast.error(err?.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -44,7 +47,7 @@ const Login = () => {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Sign in to your ContentPro account"
+      subtitle="Sign in to your Admin account"
     >
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         {error && (
@@ -117,29 +120,7 @@ const Login = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <input
-              id="remember-me"
-              name="remember-me"
-              type="checkbox"
-              className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-border rounded"
-            />
-            <label
-              htmlFor="remember-me"
-              className="ml-2 text-sm text-foreground"
-            >
-              Remember me
-            </label>
-          </div>
-
-          <Link
-            to="/forgot-password"
-            className="text-sm text-brand-600 hover:text-brand-500 font-medium"
-          >
-            Forgot password?
-          </Link>
-        </div>
+        
 
         <Button
           type="submit"
@@ -149,38 +130,8 @@ const Login = () => {
           {isLoading ? "Signing in..." : "Sign in"}
         </Button>
 
-        <div className="text-center">
-          <span className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="font-medium text-brand-600 hover:text-brand-500"
-            >
-              Sign up
-            </Link>
-          </span>
-        </div>
 
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-background px-2 text-muted-foreground">
-                Demo credentials
-              </span>
-            </div>
-          </div>
-          <div className="mt-4 text-center text-sm text-muted-foreground space-y-1">
-            <p>
-              <strong>Email:</strong> admin@contentpro.com
-            </p>
-            <p>
-              <strong>Password:</strong> password123
-            </p>
-          </div>
-        </div>
+        
       </form>
     </AuthLayout>
   );

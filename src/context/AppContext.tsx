@@ -1,29 +1,15 @@
 import React, { createContext, useContext, useReducer, ReactNode } from "react";
-import { User, Brand, ContentPlan, LoadingState, Toast } from "@/types";
-import { StepperStep } from "@/components/ui/vertical-stepper";
+import { User, Toast } from "@/types";
 
 interface AppState {
   user: User | null;
-  currentBrand: Brand | null;
-  brands: Brand[];
-  contentPlans: ContentPlan[];
-  loadingState: LoadingState;
   toasts: Toast[];
   sidebarOpen: boolean;
-  stepperSteps: StepperStep[];
   
 }
 
 type AppAction =
   | { type: "SET_USER"; payload: User | null }
-  | { type: "SET_CURRENT_BRAND"; payload: Brand | null }
-  | { type: "SET_BRANDS"; payload: Brand[] }
-  | { type: "ADD_BRAND"; payload: Brand }
-  | { type: "UPDATE_BRAND"; payload: Brand }
-  | { type: "SET_CONTENT_PLANS"; payload: ContentPlan[] }
-  | { type: "ADD_CONTENT_PLAN"; payload: ContentPlan }
-  | { type: "UPDATE_CONTENT_PLAN"; payload: ContentPlan }
-  | { type: "SET_LOADING"; payload: LoadingState }
   | { type: "ADD_TOAST"; payload: Toast }
   | { type: "REMOVE_TOAST"; payload: string }
   | { type: "TOGGLE_SIDEBAR" }
@@ -31,55 +17,14 @@ type AppAction =
 
 const initialState: AppState = {
   user: null,
-  currentBrand: null,
-  brands: [],
-  contentPlans: [],
-  loadingState: {
-    isLoading: false,
-    message: "",
-  },
   toasts: [],
   sidebarOpen: true,
-  stepperSteps: [],
 };
 
 const appReducer = (state: AppState, action: AppAction): AppState => {
   switch (action.type) {
     case "SET_USER":
       return { ...state, user: action.payload };
-    case "SET_CURRENT_BRAND":
-      return { ...state, currentBrand: action.payload };
-    case "SET_BRANDS":
-      return { ...state, brands: action.payload };
-    case "ADD_BRAND":
-      return { ...state, brands: [...state.brands, action.payload] };
-    case "UPDATE_BRAND":
-      return {
-        ...state,
-        brands: state.brands.map((brand) =>
-          brand.id === action.payload.id ? action.payload : brand,
-        ),
-        currentBrand:
-          state.currentBrand?.id === action.payload.id
-            ? action.payload
-            : state.currentBrand,
-      };
-    case "SET_CONTENT_PLANS":
-      return { ...state, contentPlans: action.payload };
-    case "ADD_CONTENT_PLAN":
-      return {
-        ...state,
-        contentPlans: [...state.contentPlans, action.payload],
-      };
-    case "UPDATE_CONTENT_PLAN":
-      return {
-        ...state,
-        contentPlans: state.contentPlans.map((plan) =>
-          plan.id === action.payload.id ? action.payload : plan,
-        ),
-      };
-    case "SET_LOADING":
-      return { ...state, loadingState: action.payload, stepperSteps:action.payload.stepperSteps ?? state.stepperSteps };
     case "ADD_TOAST":
       return { ...state, toasts: [...state.toasts, action.payload] };
     case "REMOVE_TOAST":
@@ -122,20 +67,19 @@ export const useAppContext = () => {
 };
 
 // Helper hooks for common operations
+
 export const useUser = () => {
-  const { state } = useAppContext();
-  return state.user;
+  const { state, dispatch } = useAppContext();
+  const setUser = (user: User | null) => {
+    dispatch({ type: "SET_USER", payload: user });
+  };
+  return {
+    user: state.user,
+    setUser,
+  };
 };
 
-export const useCurrentBrand = () => {
-  const { state } = useAppContext();
-  return state.currentBrand;
-};
 
-export const useLoadingState = () => {
-  const { state } = useAppContext();
-  return state.loadingState;
-};
 
 export const useToasts = () => {
   const { state, dispatch } = useAppContext();

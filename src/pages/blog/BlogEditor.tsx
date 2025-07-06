@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { ArrowLeft, Save, Eye, Tag, X } from "lucide-react";
+import { ArrowLeft, Save, Tag, X, CircleCheckBig } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,34 +14,76 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { blogApi } from "@/services/api";
-import { BlogPost } from "@/types";
+import MDEditor from "@uiw/react-md-editor";
+
+import {
+  AddPost,
+  fetchBlogCategories,
+  fetchPostDetails,
+} from "@/services/blogServices";
+import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useUpdateBlogpost } from "@/services/mutations/blog";
+import { useUser } from "@/context/AppContext";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface BlogFormData {
   title: string;
   content: string;
-  excerpt: string;
-  status: "draft" | "published";
+  summary: string;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   tags: string[];
-  featuredImage?: string;
-  slug?: string;
-  seoTitle?: string;
-  seoDescription?: string;
+  featuredImage: string;
+  metaTitle: string;
+  metaDescription: string;
+  metaKeywords: string[];
+  isFeatured: boolean;
   publishedAt?: string;
-  readingTime?: number;
-  category?: string;
+  readingTime: string;
+  category: string;
 }
 
+// Map of form field names to post property names
+const fieldMap = [
+  ["title", "title"],
+  ["content", "content"],
+  ["summary", "summary"],
+  ["category", "category"],
+  ["status", "status"],
+  ["tags", "tags"],
+  ["readingTime", "readingTime"],
+  ["featuredImage", "featuredImage"],
+  ["metaTitle", "metaTitle"],
+  ["metaDescription", "metaDescription"],
+  ["metaKeywords", "metaKeywords"],
+];
 const BlogEditor = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useUser();
   const isEdit = Boolean(id);
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(isEdit);
+  const [categories, setCategories] = useState<
+    { _id: string; name: string; slug: string }[]
+  >([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+
+  const [metatagInput, setMetatagInput] = useState("");
+  const [metaTags, setMetaTags] = useState<string[]>([]);
+  const [content, setContent] = useState<any>("");
+  const [publish, setPublish] = useState(false);
 
   const {
     register,
@@ -53,58 +95,58 @@ const BlogEditor = () => {
     defaultValues: {
       title: "",
       content: "",
-      excerpt: "",
-      status: "draft",
+      summary: "",
+      status: "DRAFT",
       tags: [],
-      slug: "",
-      seoTitle: "",
-      seoDescription: "",
+      metaTitle: "",
+      metaDescription: "",
       category: "",
-      readingTime: 5,
+      readingTime: "1",
+      isFeatured: false,
+      metaKeywords: [],
+      featuredImage: "",
     },
   });
 
   const watchedContent = watch("content");
-  const watchedTitle = watch("title");
 
-  useEffect(() => {
-    if (isEdit && id) {
-      fetchPost();
-    }
-  }, [isEdit, id]);
+
 
   const fetchPost = async () => {
     try {
-      const response = await blogApi.getById(id!);
-      const post = response.data;
-      setValue("title", post.title);
-      setValue("content", post.content);
-      setValue("excerpt", post.excerpt);
-      setValue("status", post.status);
-      setTags(post.tags);
-      setValue("tags", post.tags);
-      setValue("slug", post.slug);
-      if (post.featuredImage) {
-        setValue("featuredImage", post.featuredImage);
-      }
-      // Set metadata fields if they exist in the BlogPost type
-      // Note: These fields may need to be added to the BlogPost interface
-      if ((post as any).seoTitle) setValue("seoTitle", (post as any).seoTitle);
-      if ((post as any).seoDescription)
-        setValue("seoDescription", (post as any).seoDescription);
-      if ((post as any).category) setValue("category", (post as any).category);
-      if ((post as any).readingTime)
-        setValue("readingTime", (post as any).readingTime);
-      if (post.publishedAt)
-        setValue("publishedAt", post.publishedAt.slice(0, 16));
+      const response = await fetchPostDetails(id!);
+      const post = response?.entity;
+      console.log(response);
+      fieldMap.forEach(([formKey, postKey]) => {
+        if (post[postKey] !== undefined) {
+          setValue(formKey as any, post[postKey]);
+        }
+      });
+
+      setTags(post.tags || []);
+      setMetaTags(post.metaKeywords || []);
     } catch (error) {
-      console.error("Failed to fetch blog post:", error);
+      toast.error(error?.message || "Failed to fetch blog post:");
       navigate("/blog");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const loadCategories = async () => {
+    setCategoriesLoading(true);
+    try {
+      const response = await fetchBlogCategories();
+      // setCategories(response.data);
+      setCategories(response?.entity);
+    } catch (error) {
+      console.error("Failed to load categories:", error);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  // add post tags
   const addTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
       const newTags = [...tags, tagInput.trim()];
@@ -114,37 +156,112 @@ const BlogEditor = () => {
     }
   };
 
+  // remove post tags
   const removeTag = (tagToRemove: string) => {
     const newTags = tags.filter((tag) => tag !== tagToRemove);
     setTags(newTags);
     setValue("tags", newTags);
   };
 
-  const onSubmit = async (data: BlogFormData) => {
-    setIsSaving(true);
-    try {
-      data.tags = tags;
-
-      if (isEdit) {
-        await blogApi.update(id!, data);
-      } else {
-        await blogApi.create(data);
-      }
-
-      navigate("/blog");
-    } catch (error) {
-      console.error("Failed to save blog post:", error);
-    } finally {
-      setIsSaving(false);
+  // add meta keywords
+  const addMetaTag = () => {
+    if (metatagInput.trim() && !metaTags.includes(metatagInput.trim())) {
+      const newTags = [...metaTags, metatagInput.trim()];
+      setMetaTags(newTags);
+      setValue("metaKeywords", newTags);
+      setMetatagInput("");
     }
   };
 
+  // remove meta keywords
+  const removeMetaTag = (tagToRemove: string) => {
+    const newTags = metaTags.filter((tag) => tag !== tagToRemove);
+    setMetaTags(newTags);
+    setValue("metaKeywords", newTags);
+  };
+
+  const AddNewPost = useMutation((data: any) => AddPost(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["ALL POSTS"]);
+      toast.success("Post was created Successfully!");
+      navigate(`/blog`);
+    },
+    onError: (err: any) => {
+      // Handle error
+      toast.error(
+        err.message ||
+          "An error occurred! This may be an issue with our service, or your network. Please, try again",
+      );
+    },
+    onSettled: () => {
+      setIsSaving(false);
+    },
+  });
+
+  const {
+    mutate,
+    isSuccess,
+    isLoading: updateLoading,
+    reset,
+  } = useUpdateBlogpost();
+
+  const onSubmit = (data: BlogFormData) => {
+    data.tags = tags;
+
+    if (!data?.content) {
+      toast.warning("post content is required");
+      return;
+    } else if (!data?.category) {
+      toast.warning("post category is required");
+      return;
+    }
+
+    if (isEdit) {
+      mutate({
+        id: id,
+        payload: {
+          ...data,
+        },
+      });
+    } else {
+      setIsSaving(true);
+      AddNewPost.mutate({
+        ...data,
+        status: publish ? "PUBLISHED" : "DRAFT",
+        isFeatured: true,
+        author: {
+          firstName: user?.firstName,
+          lastName: user?.lastName,
+          _id: user?._id,
+        },
+      });
+    }
+  };
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
       addTag();
     }
   };
+  const handleMetaKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && metatagInput.trim()) {
+      e.preventDefault();
+      addMetaTag();
+    }
+  };
+
+   useEffect(() => {
+    if (isSuccess) {
+      reset();
+      // setShow();
+    }
+  }, [isSuccess]);
+    useEffect(() => {
+    if (isEdit && id) {
+      fetchPost();
+    }
+    loadCategories();
+  }, [isEdit, id]);
 
   if (isLoading) {
     return (
@@ -156,6 +273,8 @@ const BlogEditor = () => {
       </AppLayout>
     );
   }
+
+ 
 
   return (
     <AppLayout>
@@ -178,27 +297,17 @@ const BlogEditor = () => {
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" onClick={() => navigate("/blog")}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit(onSubmit)}
-              disabled={isSaving}
-              className="bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {isSaving ? "Saving..." : isEdit ? "Update Post" : "Create Post"}
-            </Button>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="w-full gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Content</CardTitle>
+                <CardDescription>
+                  Provide the basic and essential information for the post
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
@@ -217,27 +326,112 @@ const BlogEditor = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="excerpt">Excerpt</Label>
+                  <Label htmlFor="excerpt">Summary</Label>
                   <Textarea
                     id="excerpt"
-                    placeholder="Brief description of your blog post..."
+                    placeholder="Brief summary of your blog post..."
                     rows={3}
-                    {...register("excerpt")}
+                    {...register("summary", {
+                      required: "This field is required",
+                    })}
                     className="mt-1"
                   />
+                  {errors.summary && (
+                    <p className="text-sm text-destructive mt-1">
+                      {errors.summary.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="featuredImage">Featured Image URL</Label>
+                  <Input
+                    id="featuredImage"
+                    placeholder="https://example.com/image.jpg"
+                    {...register("featuredImage", {
+                      required: "This field is required",
+                    })}
+                    className="mt-1"
+                  />
+                  {errors.featuredImage && (
+                    <p className="text-sm text-destructive mt-1">
+                      {errors.featuredImage.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid lg:grid-cols-2 grid-cols-1 gap-4">
+                  <div>
+                    <Label htmlFor="category">Category</Label>
+                    <Select
+                      onValueChange={(value) => {
+                        setValue("category", value);
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue
+                          placeholder={
+                            categoriesLoading
+                              ? "Loading categories..."
+                              : "Select category"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categoriesLoading ? (
+                          <SelectItem value="n" disabled>
+                            Loading categories...
+                          </SelectItem>
+                        ) : categories.length === 0 ? (
+                          <SelectItem value="n" disabled>
+                            No categories available
+                          </SelectItem>
+                        ) : (
+                          categories.map((category) => (
+                            <SelectItem key={category._id} value={category._id}>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-3 h-3 rounded bg-brand-600" />
+                                <span>{category.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="readingTime">Reading Time (minutes)</Label>
+                    <Input
+                      id="readingTime"
+                      type="number"
+                      placeholder="1"
+                      {...register("readingTime", {
+                        required: "This field is required",
+                      })}
+                      className="mt-1"
+                      min="1"
+                      max="60"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <Label htmlFor="content">Content</Label>
-                  <Textarea
-                    id="content"
-                    placeholder="Write your blog post content here..."
-                    rows={20}
-                    {...register("content", {
-                      required: "Content is required",
-                    })}
-                    className="mt-1"
-                  />
+                  <div className="wmde-var bg-white mt-2">
+                    <MDEditor
+                      value={content}
+                      onChange={(val) => {
+                        setContent(val);
+                        setValue("content", val);
+                      }}
+                      preview="edit"
+                      textareaProps={{
+                        placeholder: "Please enter content",
+                      }}
+                      height={400}
+                    />
+                  </div>
                   {errors.content && (
                     <p className="text-sm text-destructive mt-1">
                       {errors.content.message}
@@ -247,201 +441,218 @@ const BlogEditor = () => {
                     {watchedContent?.length || 0} characters
                   </div>
                 </div>
+
+                <div>
+                  <Label htmlFor="tags">Tags</Label>
+                  <div className="flex flex-wrap gap-2 my-2">
+                    {tags.map((tag, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="text-xs"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="ml-2 hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Add a tag..."
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addTag}
+                      disabled={!tagInput.trim()}
+                    >
+                      <Tag className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            /* Publish Settings */
-            <Card>
-              <CardHeader>
-                <CardTitle>Publish Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    onValueChange={(value) =>
-                      setValue("status", value as "draft" | "published")
-                    }
-                    defaultValue="draft"
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    onValueChange={(value) => setValue("category", value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="content-marketing">
-                        Content Marketing
-                      </SelectItem>
-                      <SelectItem value="seo">SEO</SelectItem>
-                      <SelectItem value="social-media">Social Media</SelectItem>
-                      <SelectItem value="analytics">Analytics</SelectItem>
-                      <SelectItem value="tutorials">Tutorials</SelectItem>
-                      <SelectItem value="news">News</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="publishedAt">Publish Date</Label>
-                  <Input
-                    id="publishedAt"
-                    type="datetime-local"
-                    {...register("publishedAt")}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="featuredImage">Featured Image URL</Label>
-                  <Input
-                    id="featuredImage"
-                    placeholder="https://example.com/image.jpg"
-                    {...register("featuredImage")}
-                    className="mt-1"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            {/* SEO Metadata */}
+          {/* Post Metadata */}
+          <div className="space-y-6 my-8">
             <Card>
               <CardHeader>
                 <CardTitle>SEO Metadata</CardTitle>
+                <CardDescription>
+                  Optimize your post for search engines
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="slug">URL Slug</Label>
-                  <Input
-                    id="slug"
-                    placeholder="blog-post-url-slug"
-                    {...register("slug")}
-                    className="mt-1"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Leave empty to auto-generate from title
-                  </p>
-                </div>
-
                 <div>
                   <Label htmlFor="seoTitle">SEO Title</Label>
                   <Input
                     id="seoTitle"
                     placeholder="Title for search engines (60 chars)"
-                    {...register("seoTitle")}
+                    {...register("metaTitle")}
                     className="mt-1"
                     maxLength={60}
                   />
                   <div className="text-xs text-muted-foreground mt-1">
-                    {watch("seoTitle")?.length || 0}/60 characters
+                    {watch("metaTitle")?.length || 0}/60 characters
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="seoDescription">SEO Description</Label>
+                  <Label htmlFor="meta_description">SEO Description</Label>
                   <Textarea
                     id="seoDescription"
                     placeholder="Description for search engines (160 chars)"
                     rows={3}
-                    {...register("seoDescription")}
+                    {...register("metaDescription")}
                     className="mt-1"
                     maxLength={160}
                   />
                   <div className="text-xs text-muted-foreground mt-1">
-                    {watch("seoDescription")?.length || 0}/160 characters
+                    {watch("metaDescription")?.length || 0}/160 characters
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="readingTime">Reading Time (minutes)</Label>
-                  <Input
-                    id="readingTime"
-                    type="number"
-                    placeholder="5"
-                    {...register("readingTime", { valueAsNumber: true })}
-                    className="mt-1"
-                    min="1"
-                    max="60"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            {/* Tags */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Tags</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => removeTag(tag)}
-                        className="ml-2 hover:text-destructive"
+                  <Label htmlFor="metaKeywords">Meta Keywords</Label>
+                  <div className="flex flex-wrap gap-2 my-2">
+                    {metaTags.map((tag, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="text-xs"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Add a tag..."
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addTag}
-                    disabled={!tagInput.trim()}
-                  >
-                    <Tag className="h-4 w-4" />
-                  </Button>
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeMetaTag(tag)}
+                          className="ml-2 hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Add a tag..."
+                      value={metatagInput}
+                      onChange={(e) => setMetatagInput(e.target.value)}
+                      onKeyPress={handleMetaKeyPress}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addMetaTag}
+                      disabled={!metatagInput.trim()}
+                    >
+                      <Tag className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-            {/* Preview */}
+          </div>
+
+          {/* Post Visibility */}
+          <div>
             <Card>
               <CardHeader>
-                <CardTitle>Preview</CardTitle>
+                <CardTitle>Post Visibility</CardTitle>
+                <CardDescription>
+                  Control how and where your post appears
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="text-sm">
-                  <div className="font-medium line-clamp-2">
-                    {watchedTitle || "Untitled Post"}
-                  </div>
-                  <div className="text-muted-foreground mt-2 line-clamp-3">
-                    {watchedContent?.substring(0, 150) || "No content yet..."}
-                    {watchedContent && watchedContent.length > 150 && "..."}
-                  </div>
+                <div className="">
+                  <label className="flex items-start space-x-2">
+                    <Checkbox className="mt-1 " {...register("isFeatured")} />
+                    <div>
+                      <span className="font-medium text-[15px] text-zinc-700">
+                        Feature this post
+                      </span>
+                      <p className="text-sm text-zinc-500">
+                        Mark this post as featured to display it prominently on
+                        the homepage or top sections.
+                      </p>
+                    </div>
+                  </label>
                 </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Full Preview
-                </Button>
+
+                <div className="">
+                  <label className="flex items-start space-x-2">
+                    <Checkbox
+                      className="mt-1 "
+                      // onChange={(val) => {setPublish(val)}}
+                      onCheckedChange={() => setPublish(!publish)}
+                      checked={publish}
+                    />
+                    <div>
+                      <span className="font-medium text-[15px] text-zinc-700">
+                        Publish this post
+                      </span>
+                      <p className="text-sm text-zinc-500">
+                        Make this post publicly visible. Unpublished posts will
+                        remain as drafts.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                {/* <label className="flex items-start space-x-1.5">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-4 w-4 text-primary focus:ring-primary/50 border-stroke rounded"
+                  {...register("allowReviews")}
+                />
+                <div>
+                  <span className="font-medium text-zinc-700">
+                    Allow reviews
+                  </span>
+                  <p className="text-sm text-zinc-500">
+                    Let students leave ratings and reviews for your course
+                  </p>
+                </div>
+              </label> */}
               </CardContent>
             </Card>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between space-x-2 py-8">
+          <div className="">
+            <Button variant="outline" onClick={() => navigate("/blog")}>
+              Cancel
+            </Button>
+          </div>
+          <div className="flex items-center justify-between space-x-2">
+            <Button variant="secondary" onClick={() => navigate("/blog")}>
+              <Save className="h-4 w-4 mr-2" /> Save To Drafts
+            </Button>
+            <Button
+              onClick={handleSubmit(onSubmit)}
+              disabled={isSaving}
+              className="bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700"
+            >
+              <CircleCheckBig className="h-4 w-4 mr-2" />
+              {isSaving
+                ? "Saving..."
+                : isEdit
+                  ? "Update Post"
+                  : "Save and Publish Post"}
+            </Button>
           </div>
         </div>
       </div>

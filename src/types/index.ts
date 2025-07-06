@@ -152,28 +152,28 @@ export interface Toast {
 export interface BlogPost {
   id: string;
   title: string;
-  slug: string;
+  urlSlug: string;
   content: string;
-  excerpt: string;
-  featuredImage?: string;
+  summary: string;
+  featuredImage: string;
+  readingTime?: string; // in minutes
   author: {
     id: string;
-    name: string;
-    avatar?: string;
+    firstName: string;
+    lastName: string;
+    bio?: string;
   };
-  status: "draft" | "published" | "scheduled";
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   tags: string[];
-  categories: string[];
+  category: string;
+  isFeatured: boolean;
   publishedAt?: string;
-  scheduledFor?: string;
   createdAt: string;
   updatedAt: string;
-  seo: {
-    metaTitle?: string;
-    metaDescription?: string;
-    keywords: string[];
-  };
-  analytics: {
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
+  analytics?: {
     views: number;
     shares: number;
     likes: number;
@@ -194,9 +194,10 @@ export interface BlogStats {
 
 // User and Authentication Types
 export interface User {
-  id: string;
+  _id: string;
   email: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   avatar?: string;
   role: "admin" | "editor" | "viewer";
   createdAt: string;

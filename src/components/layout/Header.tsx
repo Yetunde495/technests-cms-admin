@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
-import { Bell, Search, Plus, Eye } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -22,26 +21,11 @@ const Header = ({ children }: HeaderProps) => {
       <div className="flex items-center space-x-4">
         {children}
         {/* Search */}
-        <div className="relative hidden sm:block">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            type="search"
-            placeholder="Search content, articles..."
-            className="pl-10 w-64 lg:w-80"
-          />
-        </div>
+       
       </div>
 
       <div className="flex items-center space-x-3">
-        {/* Quick Actions */}
-        <Button
-          variant="outline"
-          size="sm"
-          className="bg-gradient-to-r from-brand-500 to-brand-600 text-white border-0 hover:from-brand-600 hover:to-brand-700"
-        >
-          <Eye className="h-4 w-4 mr-2" />
-          View All Content
-        </Button>
+        
 
         {/* Notifications */}
         <DropdownMenu>

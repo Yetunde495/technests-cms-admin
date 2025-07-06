@@ -1,33 +1,20 @@
 import { NavLink, useLocation } from "react-router-dom";
-import {
-  Home,
-  Upload,
-  FileText,
-  Share2,
-  Calendar,
-  BarChart3,
-  FolderOpen,
-  Edit,
-  MessageSquare,
-  Settings,
-  LogOut,
-  BookOpen,
-  BotIcon,
-} from "lucide-react";
+import { Edit, MessageSquare, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useUser } from "@/context/AppContext";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Content Generation", href: "/generate", icon: BotIcon },
-  {
-    name: "Articles",
-    href: "/articles",
-    icon: FileText,
-    badge: "8",
-  },
-  { name: "Calendar", href: "/calendar", icon: Calendar },
+  // { name: "Dashboard", href: "/dashboard", icon: Home },
+  // { name: "Content Generation", href: "/generate", icon: BotIcon },
+  // {
+  //   name: "Articles",
+  //   href: "/articles",
+  //   icon: FileText,
+  //   badge: "8",
+  // },
+  // { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "Blog Manager", href: "/blog", icon: Edit },
   {
     name: "Chat Conversations",
@@ -43,29 +30,26 @@ const bottomNavigation = [
 
 const Sidebar = () => {
   const location = useLocation();
-
+  const { user } = useUser();
   const handleLogout = () => {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("user");
     window.location.href = "/login";
   };
 
+  const initials = [user?.firstName?.[0] || "", user?.lastName?.[0] || ""]
+    .join("")
+    .toUpperCase();
+
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center px-6 py-4 border-b border-sidebar-border">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-lg">C</span>
-          </div>
-          <div>
-            <h1 className="font-display font-bold text-xl text-sidebar-foreground">
-              ContentPro
-            </h1>
-            <p className="text-xs text-sidebar-foreground/60">
-              Content Marketing
-            </p>
-          </div>
+        <div className="flex items-center space-x-2">
+          <img src="/assets/logo.svg" className="h-8 w-8 text-primary" />
+          <span className="text-xl font-bold gradient-text !bg-clip-text text-transparent py-1">
+            technests
+          </span>
         </div>
       </div>
 
@@ -143,14 +127,14 @@ const Sidebar = () => {
       <div className="px-4 py-4 border-t border-sidebar-border">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-medium text-sm">AJ</span>
+            <span className="text-white font-medium text-sm">{initials}</span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">
-              Alex Johnson
+              {user?.firstName + " " + user?.lastName}
             </p>
             <p className="text-xs text-sidebar-foreground/60 truncate">
-              admin@contentpro.com
+              {user?.email}
             </p>
           </div>
         </div>
