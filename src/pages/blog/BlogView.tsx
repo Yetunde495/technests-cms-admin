@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { BlogPost } from "@/types";
+import { fetchPostDetails } from "@/services/blogServices";
+import { toast } from "sonner";
 
 const BlogView = () => {
   const navigate = useNavigate();
@@ -21,10 +23,11 @@ const BlogView = () => {
 
   const fetchPost = async () => {
     try {
-      // const response = await blogApi.getById(id!);
-      // setPost(response.data);
+      const response = await fetchPostDetails(id!);
+      const post = response?.entity;
+      setPost(response?.entity);
     } catch (error) {
-      console.error("Failed to fetch blog post:", error);
+      toast.error(error?.message || "Failed to fetch blog post:");
       navigate("/blog");
     } finally {
       setIsLoading(false);
@@ -99,7 +102,7 @@ const BlogView = () => {
                 <div className="flex items-center space-x-2 mb-4">
                   <Badge
                     variant={
-                      post.status === "published" ? "default" : "secondary"
+                      post.status === "PUBLISHED" ? "default" : "secondary"
                     }
                   >
                     {post.status}
@@ -116,16 +119,16 @@ const BlogView = () => {
                   {post.title}
                 </h1>
 
-                {post.excerpt && (
+                {post.summary && (
                   <p className="text-xl text-muted-foreground mb-6">
-                    {post.excerpt}
+                    {post.summary}
                   </p>
                 )}
 
                 <div className="flex items-center space-x-6 text-sm text-muted-foreground">
                   <div className="flex items-center">
                     <User className="h-4 w-4 mr-1" />
-                    {post.author}
+                    {post.author?.firstName}
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1" />
@@ -172,7 +175,7 @@ const BlogView = () => {
                   <div className="text-sm text-muted-foreground">
                     URL Slug:{" "}
                     <code className="bg-muted px-2 py-1 rounded">
-                      {post.slug}
+                      {post?.urlSlug}
                     </code>
                   </div>
                 </div>

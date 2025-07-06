@@ -152,7 +152,7 @@ export interface Toast {
 export interface BlogPost {
   id: string;
   title: string;
-  urlSlug: string;
+  urlSlug?: string;
   content: string;
   summary: string;
   featuredImage: string;
