@@ -403,7 +403,7 @@ const BlogEditor = () => {
 
               
 
-                <div>
+                <div data-color-mode="light">
                   <Label htmlFor="content">Content</Label>
                   <div className="wmde-var bg-white mt-2">
                     <MDEditor
@@ -411,9 +411,6 @@ const BlogEditor = () => {
                       onChange={(val) => {
                         setContent(val);
                         setValue("content", val);
-                      }}
-                      style={{
-                        whiteSpace: "pre-wrap",
                       }}
                       preview="edit"
                       textareaProps={{

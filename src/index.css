@@ -191,7 +191,7 @@
 }
 
  .w-md-editor, .w-md-editor-toolbar {
-  background-color: transparent!important;
+  background-color: #ffffff !important;
   color: inherit!important;
   border: 1px solid #d9d9d9!important;
   box-shadow: none!important;
@@ -206,8 +206,41 @@
   padding-left: 2rem;
 }
 
+.wmde-markdown hr {
+  color: transparent!important;
+  background-color: transparent!important;
+  border-bottom: none!important;
+}
+
+.wmde-markdown h1, h2, h3, h4, h5, h6,
+table, thead, tbody, tr, td, th,
+pre, code {
+  white-space: normal;
+  margin-top: 1.5em!important;
+  margin-bottom: 1.5em!important;
+}
+
+.wmde-markdown table, thead, tbody, tr {
+  width: 100%!important;
+}
+
+.wmde-markdown h1, h2, h3 {
+  border-bottom: none!important;
+}
+
+.wmde-markdown blockquote {
+  white-space: normal;
+  margin-top: 2.5em!important;
+  margin-bottom: 2.5em!important;
+}
+.wmde-markdown p, span {
+  white-space: pre-wrap;
+}
+
 .wmde-markdown ul {
   list-style: disc;
+   margin-top: 1em!important;
+  margin-bottom: 2em!important;
 }
 
 .wmde-markdown img {
@@ -218,6 +251,8 @@
   width: 100%;
   object-fit: cover;
   background-color: transparent!important;
+  margin-top: 4em!important;
+  margin-bottom: 4em!important;
 } 
 
 

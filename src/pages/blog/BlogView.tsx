@@ -178,7 +178,7 @@ const BlogView = () => {
                     <MDEditor.Markdown
                       source={post?.content || ""}
                       style={{
-                        whiteSpace: "pre-wrap",
+                        // whiteSpace: "pre-wrap",
                         minHeight: "350px",
                       }}
                       className="editor-preview h-full"
