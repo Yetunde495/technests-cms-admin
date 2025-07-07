@@ -124,12 +124,6 @@ const BlogEditor = () => {
       setTags(post.tags || []);
       setMetaTags(post.metaKeywords || []);
       setPublish(post?.status === "PUBLISHED");
-      const readingTimeStr = post.readingTime;
-      const readingTimeNum =
-        typeof readingTimeStr === "string"
-          ? readingTimeStr.match(/\\d+/)?.[0] || "1"
-          : readingTimeStr || "1";
-      setValue("readingTime", readingTimeNum);
     } catch (error) {
       toast.error(error?.message || "Failed to fetch blog post:");
       navigate("/blog");
@@ -357,8 +351,7 @@ const BlogEditor = () => {
                   )}
                 </div>
 
-                <div className="grid lg:grid-cols-2 grid-cols-1 gap-4">
-                  <div>
+                 <div>
                     <Label htmlFor="category">Category</Label>
                     <Select
                       onValueChange={(value) => {
@@ -408,21 +401,7 @@ const BlogEditor = () => {
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="readingTime">Reading Time (minutes)</Label>
-                    <Input
-                      id="readingTime"
-                      type="number"
-                      placeholder="1"
-                      {...register("readingTime", {
-                        required: "This field is required",
-                      })}
-                      className="mt-1"
-                      min="1"
-                      max="60"
-                    />
-                  </div>
-                </div>
+              
 
                 <div>
                   <Label htmlFor="content">Content</Label>
