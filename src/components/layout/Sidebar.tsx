@@ -44,7 +44,7 @@ const Sidebar = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center px-6 py-4 border-b border-sidebar-border">
+      <div className="flex items-center px-6 py-4 border-b border-sidebar-border max-lg:hidden">
         <div className="flex items-center space-x-2">
           <img src="/assets/logo.svg" className="h-8 w-8 text-primary" />
           <span className="text-xl font-bold gradient-text !bg-clip-text text-transparent py-1">

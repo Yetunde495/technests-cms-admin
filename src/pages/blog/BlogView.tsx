@@ -1,17 +1,27 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Edit, Calendar, User, Tag } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  Calendar,
+  Tag,
+  Clock,
+  Dot,
+  Kanban,
+} from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { BlogPost } from "@/types";
 import { fetchPostDetails } from "@/services/blogServices";
 import { toast } from "sonner";
+import MDEditor from "@uiw/react-md-editor";
+import { useUser } from "@/context/AppContext";
 
 const BlogView = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useUser();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,7 +34,6 @@ const BlogView = () => {
   const fetchPost = async () => {
     try {
       const response = await fetchPostDetails(id!);
-      const post = response?.entity;
       setPost(response?.entity);
     } catch (error) {
       toast.error(error?.message || "Failed to fetch blog post:");
@@ -33,6 +42,9 @@ const BlogView = () => {
       setIsLoading(false);
     }
   };
+  const initials = [user?.firstName?.[0] || "", user?.lastName?.[0] || ""]
+    .join("")
+    .toUpperCase();
 
   if (isLoading) {
     return (
@@ -74,7 +86,7 @@ const BlogView = () => {
             </Button>
           </div>
           <Button
-            onClick={() => navigate(`/blog/${post.id}/edit`)}
+            onClick={() => navigate(`/blog/${id}/edit`)}
             className="bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700"
           >
             <Edit className="h-4 w-4 mr-2" />
@@ -84,29 +96,33 @@ const BlogView = () => {
 
         {/* Blog Post Content */}
         <div className="max-w-4xl mx-auto">
-          <Card>
-            <CardContent className="p-8">
-              {/* Featured Image */}
-              {post.featuredImage && (
-                <div className="mb-8">
-                  <img
-                    src={post.featuredImage}
-                    alt={post.title}
-                    className="w-full h-64 object-cover rounded-lg"
-                  />
-                </div>
-              )}
+          {/* Post Header */}
+          <div className="mb-8 w-full flex flex-col justify-center items-center text-center">
+            <h1 className="lg:text-4xl md:text-3xl text-2xl font-display font-bold mb-4">
+              {post.title}
+            </h1>
 
+            {post.summary && (
+              <p className="text-base max-w-xl text-muted-foreground mb-2">
+                {post.summary}
+              </p>
+            )}
+          </div>
+          {/* Featured Image */}
+          {post.featuredImage && (
+            <div className="mb-8">
+              <img
+                src={post.featuredImage}
+                alt={post.title}
+                className="w-full h-96 object-cover rounded-md"
+              />
+            </div>
+          )}
+          <div>
+            <div className="px-1">
               {/* Post Header */}
               <div className="mb-8">
                 <div className="flex items-center space-x-2 mb-4">
-                  <Badge
-                    variant={
-                      post.status === "PUBLISHED" ? "default" : "secondary"
-                    }
-                  >
-                    {post.status}
-                  </Badge>
                   {post.tags.map((tag, index) => (
                     <Badge key={index} variant="outline">
                       <Tag className="h-3 w-3 mr-1" />
@@ -115,47 +131,59 @@ const BlogView = () => {
                   ))}
                 </div>
 
-                <h1 className="text-4xl font-display font-bold mb-4">
-                  {post.title}
-                </h1>
-
-                {post.summary && (
-                  <p className="text-xl text-muted-foreground mb-6">
-                    {post.summary}
-                  </p>
-                )}
-
-                <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                  <div className="flex items-center">
-                    <User className="h-4 w-4 mr-1" />
-                    {post.author?.firstName}
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {new Date(post.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </div>
-                  {post.publishedAt && (
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Published{" "}
-                      {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                <div className="flex items-center w-full space-x-6 justify-between text-sm text-muted-foreground">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-brand-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-medium text-sm">
+                        {initials}
+                      </span>
                     </div>
-                  )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-medium text-sidebar-foreground truncate">
+                        {user?.firstName + " " + user?.lastName}
+                      </p>
+                      <p className="text-xs text-sidebar-foreground/60 truncate">
+                        Technests Admin
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="flex items-center text-xs">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {post?.readingTime}
+                    </div>
+                    <Dot />
+                    {post.publishedAt && (
+                      <div className="flex items-center text-xs">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        Published{" "}
+                        {new Date(post.publishedAt).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          },
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Post Content */}
-              <div className="prose prose-lg max-w-none">
-                <div className="whitespace-pre-wrap leading-relaxed">
-                  {post.content}
+              <div className="w-full flex flex-col justify-center items-center">
+                <div data-color-mode="light" className="w-full">
+                  <div className="wmde-markdown-var">
+                    <MDEditor.Markdown
+                      source={post?.content || ""}
+                      style={{
+                        whiteSpace: "pre-wrap",
+                        minHeight: "350px",
+                      }}
+                      className="editor-preview h-full"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -163,14 +191,15 @@ const BlogView = () => {
               <div className="mt-8 pt-8 border-t border-border">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-muted-foreground">
-                    Last updated:{" "}
-                    {new Date(post.updatedAt).toLocaleDateString("en-US", {
+                    Meta Title: <br />
+                    {/* {new Date(post.updatedAt).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
                       hour: "2-digit",
                       minute: "2-digit",
-                    })}
+                    })} */}
+                    {post?.metaTitle}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     URL Slug:{" "}
@@ -179,9 +208,24 @@ const BlogView = () => {
                     </code>
                   </div>
                 </div>
+                <div className="text-sm text-muted-foreground my-3">
+                  Meta Description: <br />
+                  {post?.metaDescription}
+                </div>
+                <div className="text-sm text-muted-foreground my-3">
+                  Meta Keywords: <br />
+                  <div className="flex items-center space-x-2 mt-2 mb-4">
+                    {post?.metaKeywords?.map((tag, index) => (
+                      <Badge key={index} variant="outline">
+                        <Kanban className="h-3 w-3 mr-1" />
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </AppLayout>

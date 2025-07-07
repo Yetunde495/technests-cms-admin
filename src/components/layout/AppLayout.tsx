@@ -40,13 +40,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         >
           <div className="flex items-center justify-between h-16 px-6 border-b border-sidebar-border lg:hidden">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-brand-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
-              </div>
-              <span className="font-display font-bold text-lg text-sidebar-foreground">
-                ContentPro
-              </span>
-            </div>
+          <img src="/assets/logo.svg" className="h-8 w-8 text-primary" />
+          
+        </div>
             <Button
               variant="ghost"
               size="sm"

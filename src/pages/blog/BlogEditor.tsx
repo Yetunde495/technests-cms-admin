@@ -56,11 +56,11 @@ const fieldMap = [
   ["title", "title"],
   ["content", "content"],
   ["summary", "summary"],
-  ["category", "category"],
   ["status", "status"],
+  ["category", "category"],
   ["tags", "tags"],
-  ["readingTime", "readingTime"],
   ["featuredImage", "featuredImage"],
+  ["isFeatured", "isFeatured"],
   ["metaTitle", "metaTitle"],
   ["metaDescription", "metaDescription"],
   ["metaKeywords", "metaKeywords"],
@@ -110,21 +110,26 @@ const BlogEditor = () => {
 
   const watchedContent = watch("content");
 
-
-
   const fetchPost = async () => {
     try {
       const response = await fetchPostDetails(id!);
       const post = response?.entity;
-      console.log(response);
       fieldMap.forEach(([formKey, postKey]) => {
         if (post[postKey] !== undefined) {
           setValue(formKey as any, post[postKey]);
         }
       });
-
+      setValue("category", post.category._id);
+      setContent(post.content);
       setTags(post.tags || []);
       setMetaTags(post.metaKeywords || []);
+      setPublish(post?.status === "PUBLISHED");
+      const readingTimeStr = post.readingTime;
+      const readingTimeNum =
+        typeof readingTimeStr === "string"
+          ? readingTimeStr.match(/\\d+/)?.[0] || "1"
+          : readingTimeStr || "1";
+      setValue("readingTime", readingTimeNum);
     } catch (error) {
       toast.error(error?.message || "Failed to fetch blog post:");
       navigate("/blog");
@@ -250,13 +255,14 @@ const BlogEditor = () => {
     }
   };
 
-   useEffect(() => {
+  useEffect(() => {
     if (isSuccess) {
       reset();
+      navigate("/blog");
       // setShow();
     }
   }, [isSuccess]);
-    useEffect(() => {
+  useEffect(() => {
     if (isEdit && id) {
       fetchPost();
     }
@@ -274,28 +280,19 @@ const BlogEditor = () => {
     );
   }
 
- 
-
   return (
     <AppLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/blog")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Blog Manager
-            </Button>
-            <div>
-              <h1 className="text-3xl font-display font-bold">
-                {isEdit ? "Edit Blog Post" : "Create New Blog Post"}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {isEdit
-                  ? "Update your blog post content and settings"
-                  : "Write and publish your blog post"}
-              </p>
-            </div>
+        <div className="flex items-center max-sm:flex-col justify-between">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/blog")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Blog Manager
+          </Button>
+          <div>
+            <h1 className="md:text-2xl text-lg font-display font-bold">
+              {isEdit ? "Edit Blog Post" : "Create New Blog Post"}
+            </h1>
           </div>
         </div>
 
@@ -373,7 +370,18 @@ const BlogEditor = () => {
                           placeholder={
                             categoriesLoading
                               ? "Loading categories..."
-                              : "Select category"
+                              : isEdit &&
+                                  !categoriesLoading &&
+                                  categories.length > 0
+                                ? (() => {
+                                    const selectedCat = categories.find(
+                                      (cat) => cat._id === watch("category"),
+                                    );
+                                    return (
+                                      selectedCat?.name || "Select category"
+                                    );
+                                  })()
+                                : "Select category"
                           }
                         />
                       </SelectTrigger>
@@ -424,6 +432,9 @@ const BlogEditor = () => {
                       onChange={(val) => {
                         setContent(val);
                         setValue("content", val);
+                      }}
+                      style={{
+                        whiteSpace: "pre-wrap",
                       }}
                       preview="edit"
                       textareaProps={{
@@ -610,22 +621,6 @@ const BlogEditor = () => {
                     </div>
                   </label>
                 </div>
-
-                {/* <label className="flex items-start space-x-1.5">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 text-primary focus:ring-primary/50 border-stroke rounded"
-                  {...register("allowReviews")}
-                />
-                <div>
-                  <span className="font-medium text-zinc-700">
-                    Allow reviews
-                  </span>
-                  <p className="text-sm text-zinc-500">
-                    Let students leave ratings and reviews for your course
-                  </p>
-                </div>
-              </label> */}
               </CardContent>
             </Card>
           </div>
@@ -637,23 +632,15 @@ const BlogEditor = () => {
               Cancel
             </Button>
           </div>
-          <div className="flex items-center justify-between space-x-2">
-            <Button variant="secondary" onClick={() => navigate("/blog")}>
-              <Save className="h-4 w-4 mr-2" /> Save To Drafts
-            </Button>
-            <Button
-              onClick={handleSubmit(onSubmit)}
-              disabled={isSaving}
-              className="bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700"
-            >
-              <CircleCheckBig className="h-4 w-4 mr-2" />
-              {isSaving
-                ? "Saving..."
-                : isEdit
-                  ? "Update Post"
-                  : "Save and Publish Post"}
-            </Button>
-          </div>
+
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            disabled={isSaving || updateLoading}
+            className="bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700"
+          >
+            <CircleCheckBig className="h-4 w-4 mr-2" />
+            {isSaving ? "Saving..." : isEdit ? "Update Post" : "Save Post"}
+          </Button>
         </div>
       </div>
     </AppLayout>

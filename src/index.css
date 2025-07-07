@@ -182,9 +182,19 @@
   }
 }
 
+@layer components {
+  @layer components {
+  .editor-preview {
+    @apply min-h-[250px] p-4 rounded-md border-none ;
+  }
+}
+}
+
  .w-md-editor, .w-md-editor-toolbar {
   background-color: transparent!important;
   color: inherit!important;
+  border: 1px solid #d9d9d9!important;
+  box-shadow: none!important;
 }
 .wmde-markdown {
   background-color: transparent!important;
@@ -203,7 +213,10 @@
 .wmde-markdown img {
   display: block!important;
   margin: auto;
-  border-radius: 3px;
+  border-radius: 8px;
+  max-height: 24rem;
+  width: 100%;
+  object-fit: cover;
   background-color: transparent!important;
 } 
 
